@@ -45,6 +45,19 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
             return true;
 
         }
+        if (currUrl.contains("/connect2/scripttags")){
+            logger.info("preHandle in " + CONTEXT_PATH + "/connect2/scripttags");
+            return true;
+
+        }
+        if (currUrl.contains("/connect2/allScripttags")){
+            logger.info("preHandle in " + CONTEXT_PATH + "/connect2/allScripttags");
+            return true;
+        }
+        if (currUrl.contains("/connect2/delete/scripttag")){
+            logger.info("preHandle in " + CONTEXT_PATH + "/connect2/delete/scripttag");
+            return true;
+        }
 
 
         String userId = userCookieGenerator.readCookieValue(request);

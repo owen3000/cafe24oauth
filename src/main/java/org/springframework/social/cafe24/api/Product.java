@@ -50,11 +50,12 @@ public class Product extends Cafe24Object implements Serializable {
         return productName;
     }
 
-    public String getListIamge() {
-        return detailImage;
-    }
 
-    @Override
+    public String getDetailImage() {
+		return detailImage;
+	}
+
+	@Override
     public String toString() {
         return "Product{" +
                 "shopNo=" + shopNo +

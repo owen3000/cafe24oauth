@@ -1,5 +1,6 @@
 package org.springframework.social.cafe24.api;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.util.MultiValueMap;
 
 import java.util.List;
@@ -12,4 +13,9 @@ interface Cafe24Api {
 
 
     <T> List<T> fetchObjects(String connectionType, Class<T> type, MultiValueMap<String, String> params);
+    String fetchScripttags(String endPoint);
+    String fetchAllScripttags(String endPoint);
+    void fetchDeleteScripttag(String endPoint, String scriptNo);
+    
+    String fetchScripttags(HttpMethod httpMethod, String endPoint, String data);
 }

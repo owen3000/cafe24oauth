@@ -24,13 +24,41 @@
                         <p><button type="submit" value="submit">OAuth 인증</button></p>
                     </form>
                 </div>
-            </div><div class="row social-button-row">
+            </div>
+            <div class="row social-button-row">
                 <div class="col-lg-4">
                     <form action="<c:url value="/connect2/result" />" method="POST">
                         <input type="hidden" name="mall_id" value="utkg3000" />
                         <p>You haven't created any connections with Cafe24 yet. Click the button to create
                             a connection</p>
                         <p><button type="submit" value="submit">Product 가져오기</button></p>
+                    </form>
+                </div>
+            </div>
+            <div class="row social-button-row">
+                <div class="col-lg-4">
+                    <form action="<c:url value="/connect2/scripttags" />" method="POST">
+                        <input type="hidden" name="mall_id" value="utkg3000" />
+                        <p>스크립트 호출</p>
+                        <p><button type="submit" value="submit">스크립트 등록하기</button></p>
+                    </form>
+                </div>
+            </div>
+            <div class="row social-button-row">
+                <div class="col-lg-4">
+                    <form action="<c:url value="/connect2/allScripttags" />" method="POST">
+                        <input type="hidden" name="mall_id" value="utkg3000" />
+                        <p>스크립트 호출</p>
+                        <p><button type="submit" value="submit">전체 스크립트 가져오기</button></p>
+                    </form>
+                </div>
+            </div>
+            <div class="row social-button-row">
+                <div class="col-lg-4">
+                    <form action="<c:url value="/connect2/delete/scripttag" />" method="POST">
+                        <input type="text" name="script_no" value="1530693047153830" />
+                        <p>스크립트 호출</p>
+                        <p><button type="submit" value="submit">스크립트 지우기</button></p>
                     </form>
                 </div>
             </div>

@@ -16,8 +16,8 @@
     <p>상품 번호: ${product.productNo}</p>
     <p>상품 코드: ${product.productCode}</p>
     <p>상품 이름: ${product.productName}</p>
-    <p>상품 이미지: <img style="width: 200px; height: 200px"
-                    src="<c:set value="${product.detailImage}"/>"/></p>
+    <p>상품 이미지: <%-- <img style="width: 200px; height: 200px"
+                    src="<c:set value="${product.detailImage}"/>"/> --%></p>
 </c:forEach>
 
 </body>

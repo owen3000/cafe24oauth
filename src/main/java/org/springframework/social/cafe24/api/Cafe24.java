@@ -1,6 +1,7 @@
 package org.springframework.social.cafe24.api;
 
 import org.springframework.social.ApiBinding;
+import org.springframework.social.cafe24.api.scripttag.ScripttagsOperations;
 
 /**
  *  {@link Cafe24Api}와 {@link ApiBinding}을 상속하는 클래스.</br>
@@ -14,4 +15,6 @@ public interface Cafe24 extends Cafe24Api, ApiBinding {
     String getMallId();
 
     ProductOperations productOperations();
+    ScripttagsOperations scripttagsOperations();
+
 }

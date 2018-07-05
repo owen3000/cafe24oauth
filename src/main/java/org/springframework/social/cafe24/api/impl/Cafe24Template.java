@@ -1,18 +1,26 @@
 package org.springframework.social.cafe24.api.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
-import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.social.UncategorizedApiException;
 import org.springframework.social.cafe24.api.Cafe24;
 import org.springframework.social.cafe24.api.ProductOperations;
 import org.springframework.social.cafe24.api.impl.json.Cafe24Module;
+import org.springframework.social.cafe24.api.scripttag.ScripttagsOperations;
+import org.springframework.social.cafe24.api.scripttag.ScripttagsTemplate;
 import org.springframework.social.oauth2.AbstractOAuth2ApiBinding;
 import org.springframework.social.oauth2.TokenStrategy;
 import org.springframework.social.support.ClientHttpRequestFactorySelector;
@@ -21,9 +29,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
  * {@link AbstractOAuth2ApiBinding}을 상속하고 {@link Cafe24}를 구현.<br>
@@ -31,6 +41,7 @@ import java.util.List;
  *
  */
 public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
+
 
 	private static final Logger logger = LoggerFactory.getLogger(Cafe24Template.class);
 
@@ -40,6 +51,8 @@ public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
 	private ObjectMapper objectMapper;
 
 	private ProductOperations productOperations;
+	private ScripttagsOperations scripttagsOperations;
+	
 
 	public Cafe24Template(String accessToken) {
 		this(accessToken, null);
@@ -77,6 +90,7 @@ public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
 	public void initSubApi() {
 		logger.debug("initSubApi started...");
 		productOperations = new ProductTemplate(this);
+		scripttagsOperations = new ScripttagsTemplate(this);
 	}
 
 
@@ -100,13 +114,13 @@ public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
 	 * @return
 	 */
 	public <T> List<T> fetchObjects(String connectionType, Class<T> type, MultiValueMap<String, String> params) {
-		logger.debug("fetchObjects called...");
+		logger.info("fetchObjects called...");
 
 		/* connectionType이 있다면 baseUrl에 붙인다. */
 		String connectionPath = connectionType != null && connectionType.length() > 0 ? "/" + connectionType : "";
-		logger.debug("fetchObjects connectionPath: " + connectionPath);
+		logger.info("fetchObjects connectionPath: " + connectionPath);
 		String uri = getBaseApiUrl() + connectionPath;
-		logger.debug("fetchObjects uri: " + uri);
+		logger.info("fetchObjects uri: " + uri);
 
 
 		/* 여기서 멈춤. 왜? fileds가 null인 경우 length가 없었기 때문.*/
@@ -115,16 +129,16 @@ public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
 
 		/* URI 만들기 */
 		URIBuilder uriBuilder = URIBuilder.fromUri(uri).queryParams(queryParameters);
-		logger.debug("fetchObjects uriBuilder created...");
-
-		logger.debug("fetchObjects uriBuilder.build().toString(): "  + uriBuilder.build().toString());
-		logger.debug("fetchObjects uriBuilder.build().getPath(): "  + uriBuilder.build().getPath());
-		logger.debug("fetchObjects uriBuilder.build().getHost(): "  + uriBuilder.build().getHost());
-		logger.debug("fetchObjects uriBuilder.build().getScheme(): "  + uriBuilder.build().getScheme());
-		logger.debug("fetchObjects uriBuilder.build().getUserInfo(): "  + uriBuilder.build().getUserInfo());
-		logger.debug("fetchObjects uriBuilder.build().getAuthority(): "  + uriBuilder.build().getAuthority());
-		logger.debug("fetchObjects uriBuilder.build().getFragment(): "  + uriBuilder.build().getFragment());
-
+		logger.info("fetchObjects uriBuilder created...");
+/*
+		logger.info("fetchObjects uriBuilder.build().toString(): "  + uriBuilder.build().toString());
+		logger.info("fetchObjects uriBuilder.build().getPath(): "  + uriBuilder.build().getPath());
+		logger.info("fetchObjects uriBuilder.build().getHost(): "  + uriBuilder.build().getHost());
+		logger.info("fetchObjects uriBuilder.build().getScheme(): "  + uriBuilder.build().getScheme());
+		logger.info("fetchObjects uriBuilder.build().getUserInfo(): "  + uriBuilder.build().getUserInfo());
+		logger.info("fetchObjects uriBuilder.build().getAuthority(): "  + uriBuilder.build().getAuthority());
+		logger.info("fetchObjects uriBuilder.build().getFragment(): "  + uriBuilder.build().getFragment());
+*/
 		/* restTemplate으로 통신할 때 사용할 헤더 설정 */
 		HttpHeaders headers = new HttpHeaders();
 
@@ -144,16 +158,19 @@ public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
 		ResponseEntity<JsonNode> responseEntity
 				/* exchange의 매개변수는 (uri, 통신 방식, HttpEntity, 반환 받을 타입) */
 				= getRestTemplate().exchange(uriBuilder.build(), HttpMethod.GET, httpEntity, JsonNode.class);
-		logger.debug("fetchObjects responseEntity getStatusCode: "  + responseEntity.getStatusCode());
-		logger.debug("fetchObjects responseEntity getStatusCodeValue: "  + responseEntity.getStatusCodeValue());
-		logger.debug("fetchObjects responseEntity getHeaders().getLocation(): "  + responseEntity.getHeaders().getLocation());
-
+		logger.info("[ fetchObjects responseEntity ]   "  + responseEntity );
+		logger.info("[ fetchObjects responseEntity.toString() ]   "  + responseEntity.toString() );
+		logger.info("[ fetchObjects responseEntity.getStatusCode() ]   "  + responseEntity.getStatusCode() );
+		logger.info("[ fetchObjects responseEntity.getStatusCodeValue() ]   "  + responseEntity.getStatusCodeValue() );
+		logger.info("[ fetchObjects responseEntity.getHeaders() ]   "  + responseEntity.getHeaders() );
+		logger.info("[ fetchObjects responseEntity.getBody() ]   "  + responseEntity.getBody() );
+		
 		/* restTemplate에서 통신한 결과 받은 responseEntity에서 필요한 body를 꺼낸다. */
 		JsonNode jsonNode = responseEntity.getBody();
+		logger.info("[ fetchObjects jsonNode.get(connectionType), type ]   "  + jsonNode.get(connectionType) +" ---- "+type );
 		/* 전달 받은 JsonNode 객체에서 products, orders 등 원하는 값을 받아서 역직렬화하여 리스트로 만들어 반환 */
 		return deserializeDataList(jsonNode.get(connectionType), type);
 	}
-
 
 	/**
 	 * JsonNode를 역직렬화하여 List<T>로 반환하려는 메서드
@@ -163,33 +180,177 @@ public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
 
 	@SuppressWarnings("unchecked")
 	private <T> List<T> deserializeDataList(JsonNode jsonNode, final Class<T> elementType) {
-		logger.debug("deserializeDataList called...");
+		logger.info("[  deserializeDataList called... ]");
+		
 		Iterator<String> fieldNamesIterator = jsonNode.fieldNames();
 		while (fieldNamesIterator.hasNext()) {
-			logger.debug("jsonNode.fieldNames(): " + fieldNamesIterator.next());
+			logger.info("jsonNode.fieldNames(): " + fieldNamesIterator.next());
 
 		}
 
 		try {
-			logger.debug("jsonNode.toString(): " + jsonNode.toString());
-			logger.debug("deserializeDataList try to make CollectionType listType");
+			logger.info("[ deserializeDataList : jsonNode.toString(): ] " + jsonNode.toString());
 
 			/* */
 			CollectionType listType = TypeFactory.defaultInstance().constructCollectionType(List.class, elementType);
-			logger.debug("deserializeDataList CollectionType listType.getTypeName: " + listType.getTypeName());
+			logger.info("[ deserializeDataList CollectionType listType.getTypeName: ] " + listType.getTypeName());
 			//[collection type; class java.util.List, contains [simple type, class org.springframework.social.cafe24.api.Product]]
 
-			logger.debug("deserializeDataList List<T> result = objectMapper.reader(listType).readValue(jsonNode.toString())");
+			//logger.info("[ deserializeDataList List<T> result = objectMapper.reader(listType).readValue(jsonNode.toString())");
 
 			/* 이 부분에서 멈추기에 FacebookObject 같은 추상 클래스 만들어서 Product.class가 상속하도록 함 */
 			/* 매핑되지 않은 프로퍼티는 Cafe24Object의 add 메서드에서 hook을 하여 추가 */
 			List<T> result = objectMapper.readValue(jsonNode.toString(), listType);
 
+			logger.info("[ deserializeDataList List<T> result ] "+ result );
 			return result;
 		} catch (IOException e) {
 			throw new UncategorizedApiException("cafe24", "Error deserializing data from cafe24: " + e.getMessage(), e);
 		}
 	}
+
+	@Override
+	public String fetchScripttags(String endPoint) {
+		
+		String connectionPath = endPoint != null && endPoint.length() > 0 ? "/" + endPoint : "";
+		String uri = getBaseApiUrl() + connectionPath;
+		logger.info("[ fetchScripttags : uri ] " + uri);
+		URIBuilder uriBuilder = URIBuilder.fromUri(uri);
+		logger.info("[ fetchScripttags : uriBuilder.build() ] " + uriBuilder.build());
+		
+		
+		RestTemplate restTemplate = getRestTemplate();
+		
+		restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+		
+		// make data
+		Map<String, Object> requestMap = new HashMap<String, Object>();
+		Map<String, Object> valueMap = new HashMap<String, Object>();
+		
+		valueMap.put("src", "https://devbit004.cafe24.com/cafe24oauth_gt/assets/js/app/test_scripttags.js");
+		ArrayList<String> displayLocations = new ArrayList<String>();
+		displayLocations.add( "MAIN" );
+		displayLocations.add( "PRODUCT_DETAIL" );
+		valueMap.put("display_location", displayLocations );
+		
+		requestMap.put( "request", valueMap );
+		
+		String data = JSON.toJSONString( requestMap );
+		
+		
+		// 헤더 설정
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		
+		HttpEntity<String> entity = new HttpEntity<String>( data, headers );
+
+		// 호출
+		logger.info("[ fetchScripttags : exchange 호출! ] ");
+		ResponseEntity<String> response =
+				 restTemplate.exchange( uriBuilder.build(), HttpMethod.POST, entity, String.class );
+		logger.info("[ fetchScripttags : response ] " + response);
+		logger.info("[ fetchScripttags : response.getBody() ] " + response.getBody());
+		
+		return response.getBody();
+	}
+	
+	@Override
+	public String fetchScripttags(HttpMethod httpMethod, String endPoint, String data) {
+		
+		String connectionPath = endPoint != null && endPoint.length() > 0 ? "/" + endPoint : "";
+		String uri = getBaseApiUrl() + connectionPath;
+		logger.info("[ fetchScripttags : uri ] " + uri);
+		URIBuilder uriBuilder = URIBuilder.fromUri(uri);
+		logger.info("[ fetchScripttags : uriBuilder.build() ] " + uriBuilder.build());
+		
+		
+		RestTemplate restTemplate = getRestTemplate();
+		
+		//restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
+		// 헤더 설정
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		
+		
+		HttpEntity<String> entity = null;
+		if( data != null ) {
+			entity = new HttpEntity<String>( data, headers );
+		}
+		else {
+			entity = new HttpEntity<String>( headers );
+		}
+		
+		
+		// 호출
+		logger.info("[ fetchScripttags : exchange 호출! ] ");
+		ResponseEntity<String> response =
+				 restTemplate.exchange( uriBuilder.build(), httpMethod, entity, String.class );
+		logger.info("[ fetchScripttags : response.getBody() ] " + response.getBody());
+		
+		return response.getBody();
+	}
+
+
+	
+	@Override
+	public String fetchAllScripttags(String endPoint) {
+		String connectionPath = endPoint != null && endPoint.length() > 0 ? "/" + endPoint : "";
+		String uri = getBaseApiUrl() + connectionPath;
+		logger.info("[ fetchAllScripttags : uri ] " + uri);
+		URIBuilder uriBuilder = URIBuilder.fromUri(uri);
+		logger.info("[ fetchAllScripttags : uriBuilder.build() ] " + uriBuilder.build());
+		
+		
+		RestTemplate restTemplate = getRestTemplate();
+		
+		
+		
+		// 헤더 설정
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		
+		HttpEntity<String> entity = new HttpEntity<String>( headers );
+
+		// 호출
+		logger.info("[ fetchAllScripttags : exchange 호출! ] ");
+		ResponseEntity<String> response =
+				 restTemplate.exchange( uriBuilder.build(), HttpMethod.GET, entity, String.class );
+		logger.info("[ fetchAllScripttags : response ] " + response);
+		logger.info("[ fetchAllScripttags : response.getBody() ] " + response.getBody());
+		
+		return response.getBody();
+	}
+
+	@Override
+	public void fetchDeleteScripttag(String endPoint, String scriptNo) {
+		String connectionPath = endPoint != null && endPoint.length() > 0 ? "/" + endPoint : "";
+		String uri = getBaseApiUrl() + connectionPath;
+		logger.info("[ fetchDeleteScripttag : uri ] " + uri);
+		URIBuilder uriBuilder = URIBuilder.fromUri(uri + "/"+ scriptNo);
+		logger.info("[ fetchDeleteScripttag : uriBuilder.build() ] " + uriBuilder.build());
+		
+		
+		RestTemplate restTemplate = getRestTemplate();
+		
+		// 헤더 설정
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		
+		
+		HttpEntity<String> httpEntity;
+		httpEntity = new HttpEntity<String>( headers);
+		
+
+		// 호출
+		logger.info("[ fetchDeleteScripttag : exchange 호출! ] ");
+		ResponseEntity<String> response =
+				 restTemplate.exchange( uriBuilder.build(), HttpMethod.DELETE, httpEntity, String.class );
+		logger.info("[ fetchDeleteScripttag : response ] " + response);
+		logger.info("[ fetchDeleteScripttag : response.getBody() ] " + response.getBody());
+
+	}
+	
 
 
 	/**
@@ -263,6 +424,15 @@ public class Cafe24Template extends AbstractOAuth2ApiBinding implements Cafe24 {
 		logger.debug("productOperations called...");
 		return productOperations;
 	}
+	
+	@Override
+	public ScripttagsOperations scripttagsOperations() {
+		logger.info("scripttagsOperations called...");
+		return scripttagsOperations;
+	}
+
+
+
 
 
 }
