@@ -79,4 +79,11 @@ public class WebAppContext extends WebMvcConfigurerAdapter {
         return viewResolver;
     }
 
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/**").allowedOrigins("*").allowedMethods("GET,PUT,DELETE,UPDATE");
+	}
+    
+
+    
 }

@@ -58,6 +58,10 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
             logger.info("preHandle in " + CONTEXT_PATH + "/connect2/delete/scripttag");
             return true;
         }
+        if (currUrl.contains("/popup")){
+            logger.info("preHandle in " + CONTEXT_PATH + "/popup");
+            return true;
+        }
 
 
         String userId = userCookieGenerator.readCookieValue(request);

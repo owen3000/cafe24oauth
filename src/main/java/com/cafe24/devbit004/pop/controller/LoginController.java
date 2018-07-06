@@ -1,7 +1,10 @@
 package com.cafe24.devbit004.pop.controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -39,10 +42,12 @@ import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.view.RedirectView;
@@ -124,11 +129,27 @@ public class LoginController extends ConnectController {
 	}
 
 	@RequestMapping(value = "/scripttags")
-	public String scripttags(NativeWebRequest request, Model model) {
+	public void scripttags(NativeWebRequest request) {
 		logger.info("in /scripttags handler");
 		ScripttagsOperations scripttagsTemplate = cafe24.scripttagsOperations();
 
-		String createdScripttag = scripttagsTemplate.create("data");
+		// make scripttag data
+		Map<String, Object> requestMap = new HashMap<String, Object>();
+		Map<String, Object> valueMap = new HashMap<String, Object>();
+		
+		valueMap.put("src", "https://devbit004.cafe24.com/cafe24oauth_gt/assets/js/app/scripttag_main.js");
+		ArrayList<String> displayLocations = new ArrayList<String>();
+		displayLocations.add( "MAIN" );
+		//displayLocations.add( "PRODUCT_DETAIL" );
+		valueMap.put("display_location", displayLocations );
+		
+		requestMap.put("shop_no", "1" );
+		requestMap.put( "request", valueMap );
+		
+		String data = JSON.toJSONString( requestMap );
+		
+		
+		String createdScripttag = scripttagsTemplate.create( data );
 		logger.info("[ createdScripttag ] " + createdScripttag);
 
 		if (createdScripttag != null) {
@@ -137,8 +158,8 @@ public class LoginController extends ConnectController {
 			logger.info("scripttags createdScripttag  실패");
 
 		}
-		model.addAttribute("createdScripttag", createdScripttag);
-		return "user/test_scripttag";
+		//model.addAttribute("createdScripttag", createdScripttag);
+		//return "user/test_scripttag";
 	}
 
 	@RequestMapping(value = "/allScripttags")
@@ -384,4 +405,6 @@ public class LoginController extends ConnectController {
 
 		return result;
 	}
+	
+	
 }
