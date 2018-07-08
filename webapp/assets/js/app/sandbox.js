@@ -1,24 +1,5 @@
-
 document.addEventListener("DOMContentLoaded", function(event) {
-
-	// Cehck jQuery load
-	!function(){
-		var checker = setInterval(function() {
-			if ( typeof jQuery == "undefined" ) {
-				// jQuery is not loaded
-				console.log("jQuery is not loaded");
-			}
-			else {
-				console.log("jQuery is loaded");
-				clearInterval( checker );
-				
-				// show popup
-				Now2Fix( "display", function ( box ) {
-					box.showPopup();
-				});
-			}
-		}, 100 );
-	}(); // !function(){
+	
 	
 	// 생성자 작성 ( Sandbox pattern 적용 )
 	function Now2Fix(){
@@ -71,41 +52,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	
 	// 모듈 추가
 	Now2Fix.modules = {};
-	
-	Now2Fix.modules.dom = function ( box ) {
-		// 필요에 따라 다음과 같이 Sandbox 프로토타입에 접근할 수 있다. 
-		// box.constructor.prototype.m = 'mmm';
-		box.getElement = function () {
-			// code
-		};
-		box.something = "blabla";
-	};
-	
-	Now2Fix.modules.display = function ( box ) {
-		box.showPopup = function () {
-			console.log("Now2Fix.modules.display : box.show !");
-
-			
-			$.get("https://devbit004.cafe24.com/cafe24oauth_gt/assets/js/app/popup_main.html", function(data){
-			    $('body').append($(data).fadeIn());
-			});
-/*
-			$.ajax({
-				   contentType : "text/html",
-			       headers: {
-		        	   "Access-Control-Allow-Origin" : "*",
-		        	   "Access-Control-Allow-Headers" : "x-requested-with",
-		        	   "Access-Control-Allow-Methods" : "POST, GET, OPTIONS, DELETE",
-		        	   "Access-Control-Max-Age" : "3600"
-			       },
-			       url: "https://devbit004.cafe24.com/cafe24oauth_gt/assets/js/app/popup_main.html",
-			       success: function(data) {
-			    	   $('body').append($(data).fadeIn());
-			       }
-			});*/
-		};
-	};
-	
 
 	
 }); // document.addEventListener("DOMContentLoaded", function(event)

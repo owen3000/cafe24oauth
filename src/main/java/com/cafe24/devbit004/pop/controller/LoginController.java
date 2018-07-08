@@ -137,7 +137,7 @@ public class LoginController extends ConnectController {
 		Map<String, Object> requestMap = new HashMap<String, Object>();
 		Map<String, Object> valueMap = new HashMap<String, Object>();
 		
-		valueMap.put("src", "https://devbit004.cafe24.com/cafe24oauth_gt/assets/js/app/scripttag_main.js");
+		valueMap.put("src", "https://devbit004.cafe24.com/cafe24oauth_gt/assets/js/app/main.js");
 		ArrayList<String> displayLocations = new ArrayList<String>();
 		displayLocations.add( "MAIN" );
 		//displayLocations.add( "PRODUCT_DETAIL" );
@@ -405,6 +405,8 @@ public class LoginController extends ConnectController {
 
 		return result;
 	}
+	
+	
 	
 	
 }
